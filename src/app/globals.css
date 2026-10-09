@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: false;
+}
+
+/* Colors taken from the Penpot/Figma tokens: Bazardor/Color/Light */
+@plugin "daisyui/theme" {
+  name: "bazardor";
+  default: true;
+  color-scheme: light;
+  --color-base-100: #fafcfa;
+  --color-base-200: #f0f5f0;
+  --color-base-300: #e1e8e1;
+  --color-base-content: #1d271f;
+  --color-primary: #05893e;
+  --color-primary-content: #f3fbf4;
+  --color-success: #1a9951;
+  --color-error: #d03739;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+}
+
+@theme inline {
+  --font-sans: var(--font-hind), system-ui, sans-serif;
+  --color-primary-strong: #047f39;
+}
+
+body {
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  font-family: var(--font-hind), system-ui, sans-serif;
+}
+
+/* Price ticker: track holds the list twice, so -50% loops seamlessly */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 70s linear infinite;
+}
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+  .ticker { overflow-x: auto; }
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
