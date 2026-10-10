@@ -17,3 +17,8 @@ const bnPct = new Intl.NumberFormat("bn-BD", { minimumFractionDigits: 1, maximum
 
 /** 2.1 -> "২.১" ; 0 -> "০.০" */
 export const toBnPct = (n: number) => bnPct.format(n);
+
+const bnMoney2 = new Intl.NumberFormat("bn-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** Whole amounts stay clean ("৬২"), halves show two decimals ("৬৩.৫০"), as in the Figma. */
+export const toBnMoney = (n: number) => (Number.isInteger(n) ? toBn(n) : bnMoney2.format(n));
