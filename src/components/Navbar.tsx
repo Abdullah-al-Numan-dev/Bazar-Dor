@@ -154,9 +154,6 @@ function UserMenu({ user }: { user: NonNullable<NavUser> }) {
           <Link role="menuitem" href="/profile" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm hover:bg-base-200">
             👤 আমার প্রোফাইল
           </Link>
-          <Link role="menuitem" href="/compare" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm hover:bg-base-200">
-            ⚖️ বাজার তুলনা
-          </Link>
           <button
             role="menuitem"
             onClick={signOut}
