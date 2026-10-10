@@ -12,3 +12,8 @@ export function banglaDate(d: Date = new Date()) {
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
   return `${get("weekday")}, ${get("day")} ${get("month")}, ${get("year")}`;
 }
+
+const bnPct = new Intl.NumberFormat("bn-BD", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+/** 2.1 -> "২.১" ; 0 -> "০.০" */
+export const toBnPct = (n: number) => bnPct.format(n);

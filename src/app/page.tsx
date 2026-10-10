@@ -1,16 +1,24 @@
+import { Suspense } from "react";
 import Hero from "@/components/Hero";
+import HomeSections from "@/components/HomeSections";
+import { SectionSkeleton } from "@/components/ProductSkeleton";
 
 export default function Home() {
   return (
-    <main>
+    <main className="pb-12">
       <Hero />
-
-      {/* Placeholder: the CTA scrolls here. Product sections come in the next step. */}
-      <section id="সব-পণ্য" className="mx-auto max-w-6xl scroll-mt-4 px-4 py-10">
-        <h2 className="text-2xl font-bold">সব পণ্য</h2>
-        <p className="mt-1 text-base-content/70">পণ্যের তালিকা পরের ধাপে আসছে।</p>
-        <div className="h-[60vh]" aria-hidden />
-      </section>
+      {/* Hero shows instantly; skeletons stand in while product data loads */}
+      <Suspense
+        fallback={
+          <div id="সব-পণ্য" className="scroll-mt-4">
+            <SectionSkeleton />
+            <SectionSkeleton />
+            <SectionSkeleton count={9} />
+          </div>
+        }
+      >
+        <HomeSections />
+      </Suspense>
     </main>
   );
 }
