@@ -1,11 +1,14 @@
-import Navbar, { type NavUser } from "./Navbar";
+import Navbar from "./Navbar";
 import Ticker from "./Ticker";
 import { getCategories, getProducts } from "@/lib/api";
+import { getSessionUser } from "@/lib/session";
 
 export default async function Header() {
-  const [categories, products] = await Promise.all([getCategories(), getProducts()]);
-  // TODO(BetterAuth): read the session here and pass the real user.
-  const user: NavUser = null;
+  const [categories, products, user] = await Promise.all([
+    getCategories(),
+    getProducts(),
+    getSessionUser(),
+  ]);
 
   return (
     <>

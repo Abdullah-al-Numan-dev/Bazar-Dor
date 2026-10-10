@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+import ToasterProvider from "@/components/ToasterProvider";
 
 const hind = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -18,8 +19,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="bn" data-theme="bazardor" className={hind.variable}>
+    <html lang="bn" data-theme="bazardor" className={hind.variable} suppressHydrationWarning>
       <body className="min-h-screen antialiased">
+        <ToasterProvider />
         <Header />
         {children}
       </body>

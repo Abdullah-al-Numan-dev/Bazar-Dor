@@ -1,7 +1,10 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
+import { SOCIAL_FLAG } from "./auth/SocialButtons";
 import BanglaDate from "./BanglaDate";
 import type { Category } from "@/lib/api";
 
@@ -9,6 +12,17 @@ export type NavUser = { name: string; email: string; image?: string | null } | n
 
 export default function Navbar({ categories, user }: { categories: Category[]; user: NavUser }) {
   const pathname = usePathname();
+
+  // Returning from Google/GitHub: confirm the sign in once.
+  useEffect(() => {
+    if (!user) return;
+    try {
+      if (sessionStorage.getItem(SOCIAL_FLAG)) {
+        sessionStorage.removeItem(SOCIAL_FLAG);
+        toast.success("সফলভাবে সাইন ইন হয়েছে।");
+      }
+    } catch {}
+  }, [user]);
 
   return (
     <header className="border-b border-base-300 bg-base-100">
@@ -93,7 +107,20 @@ function UserMenu({ user }: { user: NonNullable<NavUser> }) {
     };
   }, []);
 
-  const first = user.name.split(" ")[0];
+  const router = useRouter();
+  const first = user.name.split(" ")[0] || user.name;
+
+  async function signOut() {
+    setOpen(false);
+    const { error } = await authClient.signOut();
+    if (error) {
+      toast.error("সাইন আউট করা যায়নি। আবার চেষ্টা করুন।");
+      return;
+    }
+    toast.success("সাইন আউট করা হয়েছে।");
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -132,8 +159,7 @@ function UserMenu({ user }: { user: NonNullable<NavUser> }) {
           </Link>
           <button
             role="menuitem"
-            // TODO(BetterAuth): authClient.signOut() + toast
-            onClick={() => setOpen(false)}
+            onClick={signOut}
             className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm text-error hover:bg-error/10"
           >
             ↩ সাইন আউট

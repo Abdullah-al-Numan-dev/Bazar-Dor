@@ -1,0 +1,11 @@
+"use client";
+import { Toaster } from "react-hot-toast";
+
+export default function ToasterProvider() {
+  return (
+    <Toaster
+      position="top-center"
+      toastOptions={{ duration: 4000, style: { fontFamily: "var(--font-hind), system-ui, sans-serif" } }}
+    />
+  );
+}
