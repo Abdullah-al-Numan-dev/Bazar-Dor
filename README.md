@@ -9,7 +9,7 @@
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)
-![BetterAuth](https://img.shields.io/badge/BetterAuth-MongoDB-05893E)
+![BetterAuth](https://img.shields.io/badge/BetterAuth-Convex-05893E)
 
 **[🌐 Live Site](#) · [📦 GitHub Repository](#)**
 
@@ -36,7 +36,7 @@ The whole interface is in Bangla, with Bengali numerals (`১,৮৫০ টা�
 3. **🏪 Market-by-market price comparison** — each product page shows min / max / average price and
    a table of prices in 12 markets, cheapest first.
 4. **🔐 Secure authentication** — email & password plus **Google** and **GitHub** login with
-   BetterAuth and MongoDB. Product details are a protected route that redirects guests to sign in
+   BetterAuth running on Convex. Product details are a protected route that redirects guests to sign in
    and brings them back afterwards.
 5. **👤 Profile & update information** — view account details and update your name on a dedicated page.
 6. **⚡ Polished UX** — skeleton loaders, toast notifications for every auth action and validation
@@ -50,7 +50,7 @@ The whole interface is in Bangla, with Bengali numerals (`১,৮৫০ টা�
 | Language | TypeScript |
 | Styling | [Tailwind CSS 4](https://tailwindcss.com/) + [DaisyUI 5](https://daisyui.com/) |
 | Authentication | [BetterAuth](https://better-auth.com/) (email/password, Google, GitHub) |
-| Database | MongoDB Atlas |
+| Backend & database | [Convex](https://convex.dev/) (BetterAuth runs inside Convex) |
 | Notifications | react-hot-toast |
 | Font | Hind Siliguri (Bangla) |
 | Data | Bazardor REST API (`/categories`, `/products`) |
@@ -70,7 +70,7 @@ The whole interface is in Bangla, with Bengali numerals (`১,৮৫০ টা�
 
 ## 🚀 Getting Started
 
-**Prerequisites:** Node.js 20+ and a MongoDB database (e.g. a free Atlas cluster).
+**Prerequisites:** Node.js 20+ and a free [Convex](https://convex.dev/) account.
 
 ```bash
 # 1. Clone and install
@@ -78,36 +78,51 @@ git clone <your-repo-url>
 cd bazardor
 npm install
 
-# 2. Configure environment variables
-cp .env.example .env.local     # then fill in the values (see below)
+# 2. Connect Convex (creates .env.local and generates convex/_generated)
+npx convex dev            # keep this running in its own terminal
 
-# 3. Run the dev server
-npm run dev                    # http://localhost:3000
+# 3. Set the auth secrets in your Convex deployment (one time)
+npx convex env set SITE_URL http://localhost:3000
+npx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
+npx convex env set GOOGLE_CLIENT_ID <id>        # optional: Google login
+npx convex env set GOOGLE_CLIENT_SECRET <secret>
+npx convex env set GITHUB_CLIENT_ID <id>        # optional: GitHub login
+npx convex env set GITHUB_CLIENT_SECRET <secret>
+
+# 4. Run the app (in a second terminal)
+npm run dev               # http://localhost:3000
 ```
 
 Other scripts: `npm run build` · `npm start` · `npm run lint`
 
 ### 🔑 Environment variables
 
+**`.env.local`** (written by `npx convex dev`):
+
 | Variable | Description |
 |---|---|
-| `MONGODB_URI` | MongoDB connection string |
-| `MONGODB_DB` | Database name (default `bazardor`) |
-| `BETTER_AUTH_SECRET` | Random secret — generate with `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | App URL: `http://localhost:3000` locally, your live URL in production |
+| `CONVEX_DEPLOYMENT` | Your Convex deployment name |
+| `NEXT_PUBLIC_CONVEX_URL` | Convex client URL (`*.convex.cloud`) |
+| `NEXT_PUBLIC_CONVEX_SITE_URL` | Convex HTTP/site URL (`*.convex.site`), where BetterAuth runs |
+
+**Convex environment** (set with `npx convex env set`):
+
+| Variable | Description |
+|---|---|
+| `SITE_URL` | Your app's URL: `http://localhost:3000` locally, the live URL in production |
+| `BETTER_AUTH_SECRET` | Random secret, generate with `openssl rand -base64 32` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth credentials *(optional)* |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth credentials *(optional)* |
 
-OAuth callback URLs: `<BETTER_AUTH_URL>/api/auth/callback/google` and
-`<BETTER_AUTH_URL>/api/auth/callback/github`.
+OAuth callback URLs: `<SITE_URL>/api/auth/callback/google` and `<SITE_URL>/api/auth/callback/github`.
 
-> ⚠️ Never commit `.env.local`. It is already listed in `.gitignore`.
+> ⚠️ Never commit `.env.local`. It is already listed in `.gitignore`. Do commit `convex/_generated`.
 
-## ☁️ Deployment (Vercel)
+## ☁️ Deployment (Vercel + Convex)
 
-1. Push the repository to GitHub and import it in Vercel.
-2. Add all the environment variables above (set `BETTER_AUTH_URL` to the deployed URL).
-3. In MongoDB Atlas → *Network Access*, allow Vercel's connections (e.g. `0.0.0.0/0`).
+1. Deploy the backend to production: `npx convex deploy`. Note the production `*.convex.cloud` and `*.convex.site` URLs.
+2. Set the Convex **production** environment variables (`SITE_URL` = your Vercel URL, `BETTER_AUTH_SECRET`, and the OAuth keys) in the Convex dashboard.
+3. Push to GitHub and import the repo in Vercel. Add `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL` (the production values).
 4. Add the production callback URLs to your Google and GitHub OAuth apps, then redeploy.
 
 Dynamic routes (`/category/[slug]`, `/product/[slug]`) are rendered on demand, so refreshing any
@@ -117,9 +132,10 @@ page works without a 404.
 
 ```
 src/
-├── app/                 # Routes: home, category, product, signin, signup, profile, api/auth
+├── app/                 # Routes: home, category, product, signin, signup, profile, api/auth (proxy to Convex)
 ├── components/          # Navbar, Ticker, Hero, ProductCard, MarketTable, Footer, auth forms…
-└── lib/                 # api.ts (data), auth.ts / auth-client.ts (BetterAuth), bn.ts (Bangla formatting)
+└── lib/                 # api.ts (data), auth-client.ts / auth-server.ts / session.ts, bn.ts (Bangla formatting)
+convex/                  # Convex backend: auth.ts (BetterAuth), http.ts, auth.config.ts, convex.config.ts
 ```
 
 ## ⚠️ Disclaimer

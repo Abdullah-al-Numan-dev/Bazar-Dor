@@ -1,18 +1,21 @@
+import { getSessionCookie } from "better-auth/cookies";
 import { headers } from "next/headers";
-import { auth } from "./auth";
+import { api } from "../../convex/_generated/api";
+import { fetchAuthQuery } from "./auth-server";
 
 // Auth gate for protected pages (product details, profile).
 export const AUTH_READY = true;
 
 export type SessionUser = { name: string; email: string; image?: string | null };
 
-/** Current user, or null. Never throws: if the DB is down, pages still render as signed-out. */
+/**
+ * Current user, or null. Never throws: if Convex is unreachable, pages still render as signed-out.
+ * Guests (no session cookie) return immediately without any network call.
+ */
 export async function getSessionUser(): Promise<SessionUser | null> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return null;
-    const { name, email, image } = session.user;
-    return { name, email, image };
+    if (!getSessionCookie(await headers())) return null;
+    return await fetchAuthQuery(api.auth.getCurrentUser, {});
   } catch {
     return null;
   }

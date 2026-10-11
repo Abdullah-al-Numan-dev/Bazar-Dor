@@ -20,13 +20,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
 
+  // Unknown product: show the 404 to everyone (guests included), before any login check.
+  const p = await getProductBySlug(slug);
+  if (!p) notFound();
+
   // Protected route: send guests to sign in, then bring them back here.
   if (AUTH_READY && !(await getSessionUser())) {
     redirect(`/signin?next=${encodeURIComponent(`/product/${slug}`)}`);
   }
-
-  const p = await getProductBySlug(slug);
-  if (!p) notFound();
 
   const s = priceStats(p);
   const diff = Math.abs(p.price - p.yesterday);

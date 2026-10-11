@@ -6,7 +6,7 @@ const subscribe = () => () => {};
 
 /** Empty on the server, real date on the client: a static build never shows a stale date. */
 export default function BanglaDate({
-  className = "block h-4 text-xs leading-4 text-base-content/80",
+  className = "block min-h-4 text-xs leading-4 text-base-content/80",
 }: {
   className?: string;
 }) {
